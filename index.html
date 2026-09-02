@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omar Eid — Junior SOC Analyst</title>
+<meta name="description" content="Omar Eid — Junior SOC Analyst. SOC operations, network security, security monitoring, log analysis, threat detection and incident response.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0C10;
+    --bg-elev: #12151B;
+    --surface: #171B22;
+    --surface-2: #1D2229;
+    --border: #2B313B;
+    --border-soft: #1E232B;
+    --text: #EDEFF3;
+    --text-dim: #99A2AE;
+    --text-faint: #5C6470;
+    --accent: #FF9B3D;
+    --accent-2: #FFC978;
+    --accent-soft: rgba(255, 155, 61, 0.12);
+    --ok: #4FD980;
+    --radius-s: 3px;
+    --radius-m: 10px;
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --sidebar-w: 250px;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  ::selection{ background:var(--accent); color:#1a0e00; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @keyframes ping{
+    0%{ transform:scale(0.3); opacity:0.9; }
+    75%,100%{ transform:scale(2.4); opacity:0; }
+  }
+  @keyframes blink-cursor{ 0%,100%{ opacity:1; } 50%{ opacity:0; } }
+  @keyframes marquee{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+  @keyframes scanline{ 0%{ transform:translateY(-100%); } 100%{ transform:translateY(100%); } }
+  @keyframes gridShift{ from{ background-position:0 0; } to{ background-position:64px 64px; } }
+  @keyframes borderGlow{
+    0%,100%{ box-shadow:0 0 0 rgba(255,155,61,0); }
+    50%{ box-shadow:0 0 22px rgba(255,155,61,0.18); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* ================= SIDEBAR ================= */
+  .sidebar{
+    position:fixed;
+    top:0; left:0; bottom:0;
+    width:var(--sidebar-w);
+    background:var(--bg-elev);
+    border-right:1px solid var(--border-soft);
+    display:flex;
+    flex-direction:column;
+    z-index:200;
+  }
+  .sb-brand{
+    display:flex; align-items:center; gap:10px;
+    padding:26px 24px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .sb-mark{
+    width:34px; height:34px;
+    border-radius:var(--radius-s);
+    background:conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--accent));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:0.7rem; font-weight:600;
+    color:#1a0e00;
+    animation:spin 6s linear infinite;
+  }
+  .sb-mark span{ animation:spin 6s linear infinite reverse; display:block; }
+  .sb-name{ font-family:var(--font-display); font-weight:700; font-size:0.98rem; }
+  .sb-role{ font-family:var(--font-mono); font-size:0.68rem; color:var(--text-faint); margin-top:2px; }
+
+  .sb-nav{ padding:18px 12px; flex-grow:1; }
+  .sb-nav a{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 12px;
+    border-radius:var(--radius-s);
+    font-size:0.87rem;
+    color:var(--text-dim);
+    transition:background .15s ease, color .15s ease, padding-left .15s ease;
+    position:relative;
+  }
+  .sb-nav a::before{
+    content:'';
+    width:5px; height:5px; border-radius:50%;
+    background:var(--text-faint);
+    transition:background .15s ease, box-shadow .15s ease;
+    flex:none;
+  }
+  .sb-nav a:hover, .sb-nav a:focus-visible{ color:var(--text); background:var(--surface); padding-left:16px; }
+  .sb-nav a:hover::before{ background:var(--accent); box-shadow:0 0 8px var(--accent); }
+
+  .sb-status{
+    padding:18px 24px 24px;
+    border-top:1px solid var(--border-soft);
+    font-family:var(--font-mono);
+    font-size:0.72rem;
+    color:var(--text-faint);
+  }
+  .sb-status .row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .dot-live{
+    width:6px; height:6px; border-radius:50%; background:var(--ok); position:relative; flex:none;
+  }
+  .dot-live::after{
+    content:''; position:absolute; inset:0; border-radius:50%; background:var(--ok);
+    animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;
+  }
+  .sb-ticker{
+    overflow:hidden; white-space:nowrap; height:16px; position:relative; margin-top:8px;
+    mask-image:linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+  }
+  .sb-ticker-track{
+    display:inline-flex; gap:26px;
+    animation:marquee 14s linear infinite;
+  }
+
+  .sb-toggle{
+    display:none;
+  }
+
+  /* ================= TOP BAR (mobile) ================= */
+  .topbar{
+    display:none;
+    position:fixed; top:0; left:0; right:0;
+    height:64px;
+    background:rgba(10,12,16,0.9);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+    z-index:210;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; }
+  .topbar button{
+    width:36px; height:36px; border:1px solid var(--border); border-radius:var(--radius-s);
+    background:transparent; color:var(--text); display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ================= MAIN ================= */
+  main{
+    margin-left:var(--sidebar-w);
+    position:relative;
+  }
+  .wrap{ max-width:980px; margin:0 auto; padding:0 40px; }
+
+  main::before{
+    content:'';
+    position:fixed;
+    top:0; left:var(--sidebar-w); right:0; bottom:0;
+    pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(var(--border-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:0.3;
+    animation:gridShift 10s linear infinite;
+  }
+  section{ position:relative; z-index:1; }
+
+  /* ================= HERO ================= */
+  .hero{
+    min-height:92vh;
+    display:flex;
+    align-items:center;
+    padding:100px 0 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  .radar-wrap{
+    position:absolute;
+    top:50%; right:-120px; transform:translateY(-50%);
+    width:560px; height:560px;
+    opacity:0.55;
+    pointer-events:none;
+  }
+  .radar-ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:1px solid var(--border);
+  }
+  .radar-ring.r2{ inset:60px; }
+  .radar-ring.r3{ inset:120px; }
+  .radar-ring.r4{ inset:180px; }
+  .radar-sweep{
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:conic-gradient(from 0deg, rgba(255,155,61,0.55), transparent 28%);
+    animation:spin 4.5s linear infinite;
+    mask-image:radial-gradient(circle, black 60%, transparent 100%);
+  }
+  .radar-blip{
+    position:absolute;
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 8px var(--accent);
+  }
+  .radar-blip::after{
+    content:''; position:absolute; inset:0; border-radius:50%; background:var(--accent);
+    animation:ping 2.6s cubic-bezier(0,0,0.2,1) infinite;
+  }
+
+  .hero-inner{ max-width:640px; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:0.8rem; color:var(--accent);
+    display:flex; align-items:center; gap:10px; margin-bottom:20px;
+    animation:fadeUp .6s ease both;
+  }
+  .eyebrow .bar{ width:22px; height:1px; background:var(--accent); }
+
+  h1.name{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(2.6rem, 6vw, 4.2rem);
+    line-height:1.03;
+    letter-spacing:-0.01em;
+    animation:fadeUp .6s ease .05s both;
+  }
+  .role-line{
+    font-family:var(--font-mono);
+    font-size:clamp(1rem, 2vw, 1.25rem);
+    color:var(--accent-2);
+    margin-top:14px;
+    display:flex; align-items:center;
+    animation:fadeUp .6s ease .12s both;
+  }
+  .role-line .cursor{
+    display:inline-block; width:9px; height:1.1em; background:var(--accent);
+    margin-left:4px; animation:blink-cursor 1s step-end infinite;
+  }
+  .hero-statement{
+    margin-top:22px; max-width:50ch; color:var(--text-dim);
+    animation:fadeUp .6s ease .18s both;
+  }
+  .hero-ctas{
+    display:flex; flex-wrap:wrap; gap:14px; margin-top:32px; align-items:center;
+    animation:fadeUp .6s ease .24s both;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--font-body); font-weight:600; font-size:0.9rem;
+    padding:12px 22px; border-radius:var(--radius-s); border:1px solid transparent;
+    cursor:pointer; transition:transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .2s ease;
+  }
+  .btn-primary{ background:var(--accent); color:#1a0e00; }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,155,61,0.28); }
+  .btn-outline{ background:transparent; border-color:var(--border); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent-2); transform:translateY(-2px); }
+  .link-inline{
+    color:var(--text-dim); font-size:0.88rem; font-weight:600;
+    border-bottom:1px solid var(--border); padding-bottom:2px;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .link-inline:hover{ color:var(--accent-2); border-color:var(--accent-2); }
+
+  /* ================= SKILLS TICKER ================= */
+  .ticker-band{
+    border-top:1px solid var(--border-soft);
+    border-bottom:1px solid var(--border-soft);
+    padding:16px 0;
+    overflow:hidden;
+    background:var(--bg-elev);
+  }
+  .ticker-track{
+    display:inline-flex; gap:40px; white-space:nowrap;
+    animation:marquee 26s linear infinite;
+  }
+  .ticker-track span{
+    font-family:var(--font-mono); font-size:0.82rem; color:var(--text-faint);
+    display:inline-flex; align-items:center; gap:10px;
+  }
+  .ticker-track span::before{ content:'▹'; color:var(--accent); }
+
+  /* ================= SECTION HEAD ================= */
+  .section{ padding:96px 0; }
+  .section-head{ margin-bottom:44px; }
+  .section-title{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(1.6rem, 3vw, 2.1rem);
+  }
+  .section-sub{ color:var(--text-dim); max-width:56ch; margin-top:10px; }
+
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  /* ================= ABOUT ================= */
+  .about-layout{ display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
+  .about-copy p{ color:var(--text-dim); margin-bottom:16px; }
+  .about-copy p strong{ color:var(--text); font-weight:600; }
+
+  .highlight-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .highlight-card{
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m);
+    padding:18px; transition:border-color .2s ease, transform .2s ease;
+  }
+  .highlight-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
+  .highlight-card svg{ width:26px; height:26px; color:var(--accent); margin-bottom:12px; }
+  .highlight-card h4{ font-family:var(--font-display); font-size:0.95rem; margin-bottom:6px; }
+  .highlight-card p{ color:var(--text-dim); font-size:0.85rem; }
+
+  /* ================= SKILL GROUPS ================= */
+  .skill-groups{ display:grid; grid-template-columns:repeat(2,1fr); gap:30px 44px; }
+  .skill-group h3{ font-family:var(--font-display); font-size:1rem; margin-bottom:14px; }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:9px; }
+  .tag{
+    font-size:0.83rem; padding:7px 13px; border:1px solid var(--border); border-radius:100px;
+    color:var(--text-dim); background:var(--surface);
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .tag:hover{ border-color:var(--accent); color:var(--text); background:var(--accent-soft); }
+
+  /* ================= TOOLS ================= */
+  .tool-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .tool-card{
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m);
+    padding:20px; display:flex; gap:14px; position:relative; overflow:hidden;
+    transition:border-color .2s ease;
+  }
+  .tool-card:hover{ border-color:var(--accent); animation:borderGlow 1.8s ease infinite; }
+  .tool-badge{
+    flex:none; width:42px; height:42px; border-radius:var(--radius-s);
+    background:var(--surface-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:500; font-size:0.75rem; color:var(--accent);
+  }
+  .tool-card h4{ font-family:var(--font-display); font-size:0.95rem; margin-bottom:5px; }
+  .tool-card p{ color:var(--text-dim); font-size:0.83rem; }
+
+  /* ================= PROJECTS ================= */
+  .project-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .project-card{
+    position:relative;
+    border:1px solid var(--border);
+    background:var(--surface);
+    border-radius:var(--radius-m);
+    padding:24px;
+    display:flex; flex-direction:column;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .project-card::before, .project-card::after{
+    content:''; position:absolute; width:16px; height:16px; border:1px solid transparent;
+    transition:border-color .2s ease;
+  }
+  .project-card::before{ top:-1px; left:-1px; border-top-color:var(--accent); border-left-color:var(--accent); opacity:0; }
+  .project-card::after{ bottom:-1px; right:-1px; border-bottom-color:var(--accent); border-right-color:var(--accent); opacity:0; }
+  .project-card:hover{ transform:translateY(-4px); border-color:var(--border); }
+  .project-card:hover::before, .project-card:hover::after{ opacity:1; }
+  .case-id{ font-family:var(--font-mono); font-size:0.7rem; color:var(--text-faint); margin-bottom:14px; }
+  .project-card h3{ font-family:var(--font-display); font-size:1.1rem; margin-bottom:10px; }
+  .project-card p.desc{ color:var(--text-dim); font-size:0.89rem; margin-bottom:16px; flex-grow:1; }
+  .project-tags{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:18px; }
+  .project-tags span{ font-size:0.73rem; padding:4px 9px; border:1px solid var(--border); border-radius:100px; color:var(--text-faint); }
+  .btn-detail{
+    align-self:flex-start; font-family:var(--font-body); font-weight:600; font-size:0.85rem;
+    color:var(--accent-2); background:transparent; border:none; cursor:pointer;
+    display:flex; align-items:center; gap:6px; padding:0;
+  }
+  .btn-detail svg{ width:14px; height:14px; transition:transform .15s ease; }
+  .btn-detail:hover svg{ transform:translateX(4px); }
+
+  dialog.project-modal{
+    border:1px solid var(--border); border-radius:var(--radius-m); background:var(--bg-elev);
+    color:var(--text); max-width:640px; width:92%; padding:0;
+  }
+  dialog.project-modal::backdrop{ background:rgba(4,5,8,0.75); backdrop-filter:blur(2px); }
+  .modal-inner{ padding:32px; }
+  .modal-close{
+    position:absolute; top:18px; right:18px; width:32px; height:32px;
+    border:1px solid var(--border); border-radius:var(--radius-s); background:transparent;
+    color:var(--text-dim); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .modal-close:hover{ color:var(--accent); border-color:var(--accent); }
+  .modal-inner h3{ font-family:var(--font-display); font-size:1.3rem; margin-bottom:4px; }
+  .modal-inner .case-id{ margin-bottom:18px; }
+  .modal-flow{ display:flex; flex-direction:column; gap:16px; margin:22px 0; }
+  .modal-flow .flow-step{ display:flex; gap:14px; }
+  .flow-label{ flex:none; width:112px; font-family:var(--font-mono); font-size:0.72rem; color:var(--accent); padding-top:2px; }
+  .flow-step p{ color:var(--text-dim); font-size:0.89rem; }
+  .modal-inner .project-tags{ margin-top:20px; margin-bottom:0; }
+
+  /* ================= TRAINING ================= */
+  .training-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .training-card{
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:22px;
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .training-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
+  .training-card h4{
+    font-family:var(--font-display); font-size:0.95rem; margin-bottom:14px; padding-bottom:12px;
+    border-bottom:1px solid var(--border-soft); color:var(--accent-2);
+  }
+  .training-card ul li{
+    color:var(--text-dim); font-size:0.86rem; padding:5px 0 5px 14px; position:relative;
+  }
+  .training-card ul li::before{ content:''; position:absolute; left:0; top:13px; width:5px; height:1px; background:var(--text-faint); }
+
+  /* ================= EDU / LANG / SOFT ================= */
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:56px; }
+  .edu-card{ border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:28px; }
+  .edu-card .degree{ font-family:var(--font-display); font-size:1.15rem; margin-bottom:8px; }
+  .edu-card .school{ color:var(--accent-2); font-size:0.94rem; margin-bottom:4px; }
+  .edu-card .grad{ color:var(--text-dim); font-size:0.85rem; font-family:var(--font-mono); }
+
+  .lang-list{ display:flex; flex-direction:column; gap:14px; }
+  .lang-row{
+    display:flex; align-items:center; justify-content:space-between;
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:16px 20px;
+  }
+  .lang-row .lang-name{ font-family:var(--font-display); font-weight:600; }
+  .lang-row .lang-level{ color:var(--accent-2); font-family:var(--font-mono); font-size:0.8rem; }
+
+  .soft-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .soft-card{
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:18px;
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .soft-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
+  .soft-card svg{ width:22px; height:22px; color:var(--accent); margin-bottom:10px; }
+  .soft-card span{ font-size:0.87rem; font-weight:500; }
+
+  /* ================= CONTACT ================= */
+  .contact-panel{
+    position:relative; overflow:hidden;
+    border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m);
+    padding:52px; display:grid; grid-template-columns:1.2fr 1fr; gap:40px; align-items:center;
+  }
+  .contact-panel .scan{
+    position:absolute; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation:scanline 4s linear infinite;
+    opacity:0.6;
+  }
+  .contact-panel h2{ font-family:var(--font-display); font-weight:700; font-size:clamp(1.6rem,3vw,2.05rem); margin-bottom:14px; }
+  .contact-panel p{ color:var(--text-dim); max-width:44ch; }
+  .contact-list{ display:flex; flex-direction:column; gap:12px; }
+  .contact-item{
+    display:flex; align-items:center; gap:12px;
+    border:1px solid var(--border); border-radius:var(--radius-s); padding:14px 16px;
+    background:var(--bg-elev); font-size:0.9rem; transition:border-color .15s ease, transform .15s ease;
+  }
+  .contact-item:hover{ border-color:var(--accent); transform:translateX(4px); }
+  .contact-item svg{ width:18px; height:18px; color:var(--accent); flex:none; }
+  .contact-item .clabel{ color:var(--text-faint); font-size:0.7rem; display:block; font-family:var(--font-mono); }
+
+  footer{ border-top:1px solid var(--border-soft); padding:28px 0; }
+  .footer-inner{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    color:var(--text-faint); font-size:0.78rem; font-family:var(--font-mono);
+  }
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:920px){
+    .sidebar{ display:none; }
+    .topbar{ display:flex; }
+    main{ margin-left:0; padding-top:64px; }
+    main::before{ left:0; }
+    .radar-wrap{ right:-220px; width:440px; height:440px; }
+    .about-layout{ grid-template-columns:1fr; }
+    .skill-groups{ grid-template-columns:1fr; }
+    .tool-grid{ grid-template-columns:repeat(2,1fr); }
+    .project-grid{ grid-template-columns:1fr; }
+    .training-grid{ grid-template-columns:repeat(2,1fr); }
+    .two-col{ grid-template-columns:1fr; gap:32px; }
+    .soft-grid{ grid-template-columns:repeat(2,1fr); }
+    .contact-panel{ grid-template-columns:1fr; padding:36px 26px; }
+
+    .mobile-nav{
+      position:fixed; top:64px; left:0; right:0; bottom:0;
+      background:var(--bg-elev); z-index:205;
+      transform:translateX(100%); transition:transform .22s ease;
+      padding:20px;
+      overflow-y:auto;
+    }
+    .mobile-nav.open{ transform:translateX(0); }
+    .mobile-nav a{ display:block; padding:16px 4px; border-bottom:1px solid var(--border-soft); font-size:1rem; }
+  }
+  @media (min-width:921px){ .mobile-nav{ display:none; } }
+
+  @media (max-width:680px){
+    .wrap{ padding:0 20px; }
+    .highlight-grid{ grid-template-columns:1fr; }
+    .tool-grid{ grid-template-columns:1fr; }
+    .training-grid{ grid-template-columns:1fr; }
+    .soft-grid{ grid-template-columns:repeat(2,1fr); }
+    .section{ padding:64px 0; }
+    .hero{ padding:88px 0 48px; min-height:auto; }
+    .radar-wrap{ opacity:0.3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-mark"><span>OE</span></div>
+    <div>
+      <div class="sb-name">Omar Eid</div>
+      <div class="sb-role">JUNIOR SOC ANALYST</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#tools">Tools</a>
+    <a href="#projects">Projects</a>
+    <a href="#training">Training</a>
+    <a href="#education">Education</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="sb-status">
+    <div class="row"><span class="dot-live"></span> Open to SOC roles</div>
+    <div class="sb-ticker">
+      <div class="sb-ticker-track">
+        <span>MONITORING</span><span>ANALYZING LOGS</span><span>MAPPING ATT&CK</span><span>SECURE</span>
+        <span>MONITORING</span><span>ANALYZING LOGS</span><span>MAPPING ATT&CK</span><span>SECURE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <a href="#hero" class="brand">Omar Eid</a>
+  <button id="topToggle" aria-label="Toggle menu" aria-expanded="false">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+<nav class="mobile-nav" id="mobileNav">
+  <a href="#about">About</a>
+  <a href="#skills">Skills</a>
+  <a href="#tools">Tools</a>
+  <a href="#projects">Projects</a>
+  <a href="#training">Training</a>
+  <a href="#education">Education</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+  <section class="hero" id="hero">
+    <div class="radar-wrap" aria-hidden="true">
+      <div class="radar-ring"></div>
+      <div class="radar-ring r2"></div>
+      <div class="radar-ring r3"></div>
+      <div class="radar-ring r4"></div>
+      <div class="radar-sweep"></div>
+      <div class="radar-blip" style="top:22%; left:64%;"></div>
+      <div class="radar-blip" style="top:58%; left:30%; animation-delay:0.9s;"></div>
+      <div class="radar-blip" style="top:70%; left:70%; animation-delay:1.7s;"></div>
+    </div>
+
+    <div class="wrap hero-inner">
+      <div class="eyebrow"><span class="bar"></span> security operations center</div>
+      <h1 class="name">Omar Eid</h1>
+      <div class="role-line">JUNIOR SOC ANALYST<span class="cursor"></span></div>
+      <p class="hero-statement">Focused on SOC operations, network security, security monitoring, threat detection, and incident response.</p>
+      <div class="hero-ctas">
+        <a href="#projects" class="btn btn-primary">View My Projects</a>
+        <a href="#contact" class="btn btn-outline">Contact Me</a>
+        <a href="http://www.linkedin.com/in/omar-eid-749099308" target="_blank" rel="noopener" class="link-inline">
+          LinkedIn
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker-band" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Security Monitoring</span><span>Log Analysis</span><span>MITRE ATT&CK</span><span>Incident Response</span>
+      <span>Network Segmentation</span><span>Firewall Policies</span><span>Threat Detection</span><span>FortiGate</span>
+      <span>Security Monitoring</span><span>Log Analysis</span><span>MITRE ATT&CK</span><span>Incident Response</span>
+      <span>Network Segmentation</span><span>Firewall Policies</span><span>Threat Detection</span><span>FortiGate</span>
+    </div>
+  </div>
+
+  <section class="section reveal" id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">About</h2>
+        <p class="section-sub">A junior analyst building a practical foundation in SOC operations through structured training and hands-on labs.</p>
+      </div>
+
+      <div class="about-layout">
+        <div class="about-copy">
+          <p>Omar Eid is an <strong>aspiring SOC Analyst</strong> with a strong foundation in cybersecurity, networking, and security operations. He has built practical experience through hands-on labs and structured training in security monitoring, log analysis, network traffic analysis, and incident response.</p>
+          <p>He is familiar with <strong>FortiGate, FortiAnalyzer, FortiSIEM, Windows Server, Active Directory, Linux</strong>, and the <strong>MITRE ATT&CK Framework</strong>, and has applied these tools inside simulated SOC environments to practice detection and investigation workflows.</p>
+          <p>His goal is to apply this technical knowledge, analytical thinking, and problem-solving skills in a professional SOC environment.</p>
+        </div>
+
+        <div class="highlight-grid">
+          <div class="highlight-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-4z"/></svg>
+            <h4>Security Foundation</h4>
+            <p>Core grounding in cybersecurity and networking principles.</p>
+          </div>
+          <div class="highlight-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <h4>Security Monitoring</h4>
+            <p>Practiced watching network and system activity for anomalies.</p>
+          </div>
+          <div class="highlight-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19h16M4 15h10M4 11h16M4 7h7"/></svg>
+            <h4>Log Analysis</h4>
+            <p>Hands-on with collecting, correlating, and reading security logs.</p>
+          </div>
+          <div class="highlight-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <h4>Incident Response</h4>
+            <p>Trained in investigating alerts and mapping activity to MITRE ATT&CK.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">Core Technical Skills</h2>
+        <p class="section-sub">Skills developed through training and lab practice, grouped by area.</p>
+      </div>
+
+      <div class="skill-groups">
+        <div class="skill-group">
+          <h3>SOC &amp; Security Operations</h3>
+          <div class="tag-row">
+            <span class="tag">Security Monitoring</span>
+            <span class="tag">Log Analysis</span>
+            <span class="tag">MITRE ATT&CK</span>
+            <span class="tag">Incident Response</span>
+            <span class="tag">Threat Detection</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Network Security &amp; Networking</h3>
+          <div class="tag-row">
+            <span class="tag">TCP/IP</span><span class="tag">VLANs</span><span class="tag">DNS</span>
+            <span class="tag">DHCP</span><span class="tag">STP</span><span class="tag">OSPF</span>
+            <span class="tag">Routing & Switching</span><span class="tag">Network Traffic Analysis</span>
+            <span class="tag">Firewall Policies</span><span class="tag">Network Segmentation</span><span class="tag">NAT</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Systems &amp; Infrastructure</h3>
+          <div class="tag-row">
+            <span class="tag">Active Directory</span><span class="tag">Windows Server</span>
+            <span class="tag">Linux</span><span class="tag">Bash Scripting</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Programming &amp; Databases</h3>
+          <div class="tag-row">
+            <span class="tag">Python</span><span class="tag">C#</span><span class="tag">SQL Server</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="tools">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">Tools &amp; Technologies</h2>
+        <p class="section-sub">Platforms used across training and lab environments.</p>
+      </div>
+
+      <div class="tool-grid">
+        <div class="tool-card"><div class="tool-badge">FG</div><div><h4>FortiGate</h4><p>Firewall configuration, network segmentation, NAT, and security policies.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">FA</div><div><h4>FortiAnalyzer</h4><p>Centralized log collection, monitoring, and security event analysis.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">FS</div><div><h4>FortiSIEM</h4><p>Trained on SIEM-based monitoring and security event correlation.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">WS</div><div><h4>Wireshark</h4><p>Packet capture and network traffic inspection during lab exercises.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">G3</div><div><h4>GNS3</h4><p>Network simulation for building and testing lab topologies.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">W11</div><div><h4>Windows 11</h4><p>Endpoint configuration and analysis within simulated environments.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">WSv</div><div><h4>Windows Server</h4><p>Server administration practiced alongside Active Directory labs.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">LX</div><div><h4>Linux</h4><p>Command-line administration and log review in lab environments.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">AD</div><div><h4>Active Directory</h4><p>User, group, and policy management within a Windows domain.</p></div></div>
+        <div class="tool-card"><div class="tool-badge">ATT&CK</div><div><h4>MITRE ATT&CK</h4><p>Framework used to map observed techniques during investigations.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="projects">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">Practical Experience &amp; Labs</h2>
+        <p class="section-sub">Hands-on lab environments built to practice SOC and network security workflows end to end.</p>
+      </div>
+
+      <div class="project-grid">
+        <article class="project-card">
+          <div class="case-id">CASE-01 / NETWORK SECURITY</div>
+          <h3>Enterprise Network Security Lab</h3>
+          <p class="desc">Designed and implemented an enterprise network using routers, switches, VLANs, and FortiGate, then monitored traffic and security events with Wireshark.</p>
+          <div class="project-tags"><span>VLANs</span><span>FortiGate</span><span>NAT</span><span>Wireshark</span></div>
+          <button class="btn-detail" data-target="modal-1">View Details
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </article>
+        <article class="project-card">
+          <div class="case-id">CASE-02 / SOC MONITORING</div>
+          <h3>SOC Home Lab — FortiGate &amp; FortiAnalyzer</h3>
+          <p class="desc">Built a complete SOC lab using GNS3, FortiGate, FortiAnalyzer, Windows 11, and Linux to simulate log collection, monitoring, and incident investigation.</p>
+          <div class="project-tags"><span>GNS3</span><span>FortiAnalyzer</span><span>Log Analysis</span><span>Linux</span></div>
+          <button class="btn-detail" data-target="modal-2">View Details
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </article>
+        <article class="project-card">
+          <div class="case-id">CASE-03 / INCIDENT RESPONSE</div>
+          <h3>Incident Investigation Lab</h3>
+          <p class="desc">Created a simulated investigation environment to analyze logs, identify indicators of compromise, and map techniques to the MITRE ATT&CK Framework.</p>
+          <div class="project-tags"><span>IOC Analysis</span><span>Attack Timeline</span><span>MITRE ATT&CK</span></div>
+          <button class="btn-detail" data-target="modal-3">View Details
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="training">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="section-title">Training &amp; Certifications</h2>
+        <p class="section-sub">Structured training completed across networking, systems, and SOC-focused programs.</p>
+      </div>
+
+      <div class="training-grid">
+        <div class="training-card"><h4>Cisco Networking Academy</h4><ul>
+          <li>CCNA: Introduction to Networks</li>
+          <li>CCNA: Switching, Routing, and Wireless Essentials</li>
+          <li>CCNA: Enterprise Networking, Security, and Automation</li>
+        </ul></div>
+        <div class="training-card"><h4>Microsoft / Windows</h4><ul>
+          <li>MCSA 70-40 Training</li><li>MCSA 70-41 Training</li><li>MCSA 70-42 Training</li>
+        </ul></div>
+        <div class="training-card"><h4>Linux</h4><ul>
+          <li>Red Hat Linux (RHEL 1) — MaharaTech</li><li>Red Hat Linux (RHEL 2) — MaharaTech</li>
+        </ul></div>
+        <div class="training-card"><h4>SOC / Blue Team</h4><ul>
+          <li>SOC Analyst Learning Path — LetsDefend</li><li>SOC Level 1 — TryHackMe</li><li>SOC Analyst — NTI Training</li>
+        </ul></div>
+        <div class="training-card"><h4>Fortinet</h4><ul>
+          <li>FortiGate Training</li><li>FortiAnalyzer Training</li><li>FortiSIEM Training</li>
+        </ul></div>
+        <div class="training-card"><h4>Cybersecurity Training</h4><ul>
+          <li>eCIR Prep — Netriders Academy</li><li>SEC450-GSOC Prep — Netriders Academy</li>
+          <li>SEC504-GCIH Prep — Netriders Academy</li><li>eJPT Prep — Netriders Academy</li>
+        </ul></div>
+        <div class="training-card"><h4>Incident Response</h4><ul>
+          <li>Cyber Security Incident Response Analyst — DEPI Training</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="education">
+    <div class="wrap two-col">
+      <div>
+        <div class="section-head"><h2 class="section-title">Education</h2></div>
+        <div class="edu-card">
+          <div class="degree">Information &amp; Communication Technology</div>
+          <div class="school">New Cairo Technological University</div>
+          <div class="grad">Expected Graduation: 2027</div>
+        </div>
+      </div>
+      <div>
+        <div class="section-head"><h2 class="section-title">Languages</h2></div>
+        <div class="lang-list">
+          <div class="lang-row"><span class="lang-name">Arabic</span><span class="lang-level">Native</span></div>
+          <div class="lang-row"><span class="lang-name">English</span><span class="lang-level">B1</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="soft-skills">
+    <div class="wrap">
+      <div class="section-head"><h2 class="section-title">Soft Skills</h2></div>
+      <div class="soft-grid">
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3H5a2 2 0 00-2 2v4M15 3h4a2 2 0 012 2v4M9 21H5a2 2 0 01-2-2v-4M15 21h4a2 2 0 002-2v-4"/></svg><span>Problem Solving</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg><span>Analytical Thinking</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-2a5 5 0 015-5h1M14 21v-2a5 5 0 015-5h0"/></svg><span>Teamwork &amp; Collaboration</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5a8.4 8.4 0 01-9 8.4A8.5 8.5 0 013 12a8.4 8.4 0 018.4-8.4 8.5 8.5 0 019.6 8"/></svg><span>Communication</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg><span>Attention to Detail</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>Time Management</span></div>
+        <div class="soft-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12h4l2-7 4 14 2-7h8"/></svg><span>Continuous Learning</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="contact">
+    <div class="wrap">
+      <div class="contact-panel">
+        <div class="scan" aria-hidden="true"></div>
+        <div>
+          <h2>Let's Connect</h2>
+          <p>Open to Junior SOC Analyst opportunities and happy to walk through any of the labs above in more detail.</p>
+        </div>
+        <div class="contact-list">
+          <a class="contact-item" href="mailto:oeabdelrhman@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 4l8 9 8-9"/></svg>
+            <span><span class="clabel">Email</span>oeabdelrhman@gmail.com</span>
+          </a>
+          <a class="contact-item" href="tel:01149376342">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.4 2.1L8 9.9a16 16 0 006 6l1.5-1.5a2 2 0 012.1-.4c.9.3 1.8.5 2.7.6a2 2 0 011.7 2.3z"/></svg>
+            <span><span class="clabel">Phone</span>01149376342</span>
+          </a>
+          <a class="contact-item" href="http://www.linkedin.com/in/omar-eid-749099308" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 014 0v4M11 13v4"/></svg>
+            <span><span class="clabel">LinkedIn</span>linkedin.com/in/omar-eid-749099308</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <span>© 2026 Omar Eid</span>
+    <span>Junior SOC Analyst // Network Security // Blue Team</span>
+  </div>
+</footer>
+
+<dialog class="project-modal" id="modal-1">
+  <div class="modal-inner">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="case-id">CASE-01 / NETWORK SECURITY</div>
+    <h3>Enterprise Network Security Lab</h3>
+    <div class="modal-flow">
+      <div class="flow-step"><span class="flow-label">BUILT</span><p>An enterprise-style network topology using routers, switches, and VLANs to separate traffic by function.</p></div>
+      <div class="flow-step"><span class="flow-label">CONFIGURED</span><p>Routing, DHCP, NAT, FortiGate firewall policies, and network segmentation across the topology.</p></div>
+      <div class="flow-step"><span class="flow-label">ANALYZED</span><p>Live network traffic and security events using Wireshark to observe how policies affected traffic flow.</p></div>
+      <div class="flow-step"><span class="flow-label">SKILLS SHOWN</span><p>Routing &amp; switching, firewall policy design, network segmentation, and traffic analysis.</p></div>
+    </div>
+    <div class="project-tags"><span>Routers & Switches</span><span>VLANs</span><span>FortiGate</span><span>DHCP</span><span>NAT</span><span>Wireshark</span></div>
+  </div>
+</dialog>
+
+<dialog class="project-modal" id="modal-2">
+  <div class="modal-inner">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="case-id">CASE-02 / SOC MONITORING</div>
+    <h3>SOC Home Lab — FortiGate &amp; FortiAnalyzer</h3>
+    <div class="modal-flow">
+      <div class="flow-step"><span class="flow-label">BUILT</span><p>A simulated SOC environment in GNS3 combining FortiGate, FortiAnalyzer, Windows 11, and Linux hosts.</p></div>
+      <div class="flow-step"><span class="flow-label">CONFIGURED</span><p>Centralized log collection from network and endpoint sources into FortiAnalyzer.</p></div>
+      <div class="flow-step"><span class="flow-label">ANALYZED</span><p>Collected security logs to monitor for suspicious activity and support incident investigation.</p></div>
+      <div class="flow-step"><span class="flow-label">SKILLS SHOWN</span><p>Log collection &amp; correlation, security monitoring, and early-stage threat detection.</p></div>
+    </div>
+    <div class="project-tags"><span>GNS3</span><span>FortiGate</span><span>FortiAnalyzer</span><span>Windows 11</span><span>Linux</span></div>
+  </div>
+</dialog>
+
+<dialog class="project-modal" id="modal-3">
+  <div class="modal-inner">
+    <button class="modal-close" data-close>&times;</button>
+    <div class="case-id">CASE-03 / INCIDENT RESPONSE</div>
+    <h3>Incident Investigation Lab</h3>
+    <div class="modal-flow">
+      <div class="flow-step"><span class="flow-label">BUILT</span><p>A simulated incident scenario to practice the end-to-end SOC investigation process.</p></div>
+      <div class="flow-step"><span class="flow-label">CONFIGURED</span><p>A log-review workflow spanning system and network sources tied to the scenario.</p></div>
+      <div class="flow-step"><span class="flow-label">ANALYZED</span><p>System and network logs to identify indicators of compromise and reconstruct the attack timeline.</p></div>
+      <div class="flow-step"><span class="flow-label">SKILLS SHOWN</span><p>Incident investigation, IOC identification, and mapping observed techniques to MITRE ATT&CK.</p></div>
+    </div>
+    <div class="project-tags"><span>Log Analysis</span><span>IOC Identification</span><span>Attack Timeline</span><span>MITRE ATT&CK</span></div>
+  </div>
+</dialog>
+
+<script>
+  const topToggle = document.getElementById('topToggle');
+  const mobileNav = document.getElementById('mobileNav');
+  topToggle.addEventListener('click', () => {
+    const open = mobileNav.classList.toggle('open');
+    topToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  mobileNav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      mobileNav.classList.remove('open');
+      topToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  document.querySelectorAll('.btn-detail').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dlg = document.getElementById(btn.dataset.target);
+      if (dlg) dlg.showModal();
+    });
+  });
+  document.querySelectorAll('dialog.project-modal').forEach(dlg => {
+    dlg.querySelector('[data-close]').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => {
+      const rect = dlg.getBoundingClientRect();
+      const inside = rect.top <= e.clientY && e.clientY <= rect.bottom && rect.left <= e.clientX && e.clientX <= rect.right;
+      if (!inside) dlg.close();
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('in');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
